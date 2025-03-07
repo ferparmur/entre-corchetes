@@ -1,0 +1,62 @@
+---
+
+---
+<div class="root">
+    <nav class="title-bar">
+        <a href="/2025-04-10" class="button info">i</a>
+        <a href="/" class="title"><h1>[Entre Corcheas]</h1></a>
+        <a href="/tutorial" class="button tutorial">?</a>
+    </nav>
+
+    <nav class="date-nav">
+        <a href="/2025-04-10">←</a>
+        <span>11/04/2025</span>
+        <a href="/2025-04-12">→</a>
+    </nav>
+</div>
+
+<style>
+    .root a {
+        text-decoration: none;
+    }
+
+    .title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 1rem;
+
+        .button {
+            display: block;
+            text-align: center;
+            align-content: center;
+            height: 35px;
+            width: 35px;
+            font-size: 20px;
+            font-weight: 700;
+            border-radius: 100%;
+            border: 3px solid var(--color-fg-body);
+            flex-shrink: 0;
+
+            @media (min-width: 730px) {
+                height: 40px;
+                width: 40px;
+            }
+        }
+
+        h1 {
+            font-size: clamp(1.5rem, 7vw, 2.5rem);
+            font-variant-caps: petite-caps;
+            margin: -5px 0 0 0;
+            line-height: 1;
+        }
+    }
+
+    .date-nav {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        font-size: 1.15rem;
+    }
+</style>
