@@ -1,0 +1,33 @@
+.prompt-area {
+  background: #e4e7ea;
+  padding: 10px;
+  border-radius: 5px;
+  font-family: var(--font-family-mono);
+  font-size: var(--game-font-size);
+  line-height: 1.7;
+  max-height: max(50vh, 300px);
+  overflow-y: auto;
+}
+
+.input-area {
+  margin-top: 10px;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  color: var(--color-fg-body);
+  font-family: var(--font-family-mono);
+  font-size: var(--game-font-size);
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.highlight-active-challenge {
+  background: var(--color-highlight-active);
+}
+
+mark {
+  background: var(--color-highlight-solution);
+}

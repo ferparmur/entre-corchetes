@@ -7,7 +7,9 @@
 
   --color-bg-body: #fefefe;
   --color-fg-body: #222;
-  --color-highlight: #fffdb8;
+  --color-highlight-active: rgba(255, 248, 182, 0.8);
+  --color-highlight-solution: rgba(182, 255, 152, 0.8);
+  --game-font-size: 20px;
 }
 
 *,
