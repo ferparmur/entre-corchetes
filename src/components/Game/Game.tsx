@@ -1,125 +1,89 @@
 import { h } from "preact";
-import { useState } from "preact/hooks";
-import removeAccents from "remove-accents";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import "./Game.css";
-
-const regexChallengesWithSolutions = /\[([^\[]*?){(.*?)}]/gm;
-const regexChallengesWithoutSolutions = /\[([^\[]*?)]/gm;
-const regexSolutions = /{(.*?)}/gm;
+import {
+  extractSolutionKeys,
+  highlightClues,
+  isValidGameState,
+  removeSolutionMarks,
+  stdDate,
+  stdString,
+  stripSolutions,
+  updateSolutionKeys,
+} from "./gameUtils.ts";
+import type { GameState, Puzzle } from "./types";
 
 type GameProps = {
-  initialPrompt: string;
+  puzzle: Puzzle;
 };
 
-type Challenge = {
-  clue: string;
-  solution: string;
-  solved: boolean;
-  active: boolean;
-};
+const Game = ({ puzzle }: GameProps) => {
+  const STORAGE_KEY = stdDate(puzzle.puzzleDate);
 
-function parseChallenges(prompt: string): Challenge[] {
-  const solutions: Challenge[] = [];
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [gameState, setGameState] = useState<GameState | undefined>(undefined);
 
-  let parsedPrompt = prompt;
-  while (parsedPrompt.match(regexChallengesWithSolutions)) {
-    for (const match of parsedPrompt.matchAll(regexChallengesWithSolutions)) {
-      solutions.push({
-        clue: match[1],
-        solution: match[2],
-        solved: false,
-        active: false,
+  // Hydrate state from localStorage only on the client
+  useEffect(() => {
+    const storedState = localStorage.getItem(STORAGE_KEY);
+    if (storedState && isValidGameState(JSON.parse(storedState))) {
+      setGameState(JSON.parse(storedState));
+    } else {
+      setGameState({
+        displayedPuzzle: stripSolutions(puzzle.puzzleCode),
+        gameComplete: false,
+        input: "",
+        solutionKeys: extractSolutionKeys(puzzle.puzzleCode),
       });
     }
+  }, []);
 
-    //Insert solutions back into the prompt
-    parsedPrompt = parsedPrompt.replace(regexChallengesWithSolutions, "$2");
-  }
+  // Autofocus on input
+  useEffect(() => {
+    if (typeof gameState !== "undefined" && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [gameState]);
 
-  return solutions;
-}
-
-function stripSolutions(prompt: string): string {
-  return prompt.replace(regexSolutions, "");
-}
-
-function refreshActiveChallenges(
-  challenges: Challenge[],
-  prompt: string,
-): Challenge[] {
-  const activeChallenges: string[] = [];
-  for (const match of prompt.matchAll(regexChallengesWithoutSolutions)) {
-    activeChallenges.push(match[1]);
-  }
-
-  return challenges.map((challenge) => {
-    challenge.active = activeChallenges.includes(challenge.clue);
-    return challenge;
-  });
-}
-
-function highlightChallenges(prompt: string): string {
-  return prompt.replace(
-    regexChallengesWithoutSolutions,
-    "<span class='highlight-active-challenge'>$&</span>",
-  );
-}
-
-function stdString(string: string): string {
-  return removeAccents(string.toLowerCase());
-}
-
-const Game = ({ initialPrompt }: GameProps) => {
-  const initialPromptWithoutSolutions = stripSolutions(initialPrompt);
-  const [currentPrompt, setCurrentPrompt] = useState<string>(
-    initialPromptWithoutSolutions,
-  );
-  const [currentHighlightedPrompt, setCurrentHighlightedPrompt] =
-    useState<string>(highlightChallenges(initialPromptWithoutSolutions));
-  const [challenges, setChallenges] = useState<Challenge[]>(
-    refreshActiveChallenges(
-      parseChallenges(initialPrompt),
-      initialPromptWithoutSolutions,
-    ),
-  );
-  const [input, setInput] = useState<string>("");
+  // Persist state to localStorage
+  useEffect(() => {
+    if (typeof gameState !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+    }
+  }, [gameState]);
 
   const handleInput = (input: string) => {
-    setInput(input);
+    if (!isValidGameState(gameState)) return;
 
-    const activeSolutions = challenges
-      .filter((challenge) => challenge.active)
-      .map((challenge) => stdString(challenge.solution));
-    if (activeSolutions.includes(stdString(input))) {
-      const solvedChallenge = challenges.filter(
-        (challenge) => stdString(challenge.solution) === stdString(input),
-      )[0];
-      const challengesWithSolved = challenges.map((challenge) => {
-        if (stdString(challenge.solution) === stdString(input)) {
-          challenge.solved = true;
-          challenge.active = false;
-        }
-        return challenge;
+    const solvedSolution = gameState.solutionKeys.find((solutionKey) => {
+      return (
+        solutionKey.active &&
+        stdString(solutionKey.solution) === stdString(input)
+      );
+    });
+    if (solvedSolution) {
+      const newPuzzle = removeSolutionMarks(gameState.displayedPuzzle).replace(
+        `[${solvedSolution.clue}]`,
+        `<mark>${solvedSolution.solution}</mark>`,
+      );
+      setGameState({
+        ...gameState,
+        displayedPuzzle: newPuzzle,
+        solutionKeys: updateSolutionKeys(
+          removeSolutionMarks(newPuzzle),
+          gameState.solutionKeys.map((solutionKey) => {
+            if (stdString(solutionKey.solution) === stdString(input)) {
+              solutionKey.active = false;
+              solutionKey.solved = true;
+            }
+            return solutionKey;
+          }),
+        ),
+        input: "",
       });
-
-      const newPrompt = currentPrompt.replace(
-        `[${solvedChallenge.clue}]`,
-        solvedChallenge.solution,
-      );
-      const newHighlightedPrompt = highlightChallenges(
-        currentPrompt
-          .replace(/<mark>(.*?)<\/mark>/gm, "$1")
-          .replace(
-            `[${solvedChallenge.clue}]`,
-            `<mark>${solvedChallenge.solution}</mark>`,
-          ),
-      );
-      setCurrentPrompt(newPrompt);
-      setCurrentHighlightedPrompt(newHighlightedPrompt);
-      setChallenges(refreshActiveChallenges(challengesWithSolved, newPrompt));
-
-      setInput("");
+    } else {
+      setGameState({ ...gameState, input });
     }
   };
 
@@ -127,15 +91,25 @@ const Game = ({ initialPrompt }: GameProps) => {
     <>
       <div
         class="prompt-area"
-        dangerouslySetInnerHTML={{ __html: currentHighlightedPrompt }}
+        dangerouslySetInnerHTML={{
+          __html: highlightClues(
+            isValidGameState(gameState)
+              ? gameState.displayedPuzzle
+              : stripSolutions(puzzle.puzzleCode),
+          ),
+        }}
       />
       <div class="input-area">
         <input
+          ref={inputRef}
           class="input"
           type="text"
-          onInput={(e) => handleInput((e.target as HTMLInputElement).value ?? "")}
+          onInput={(e) =>
+            handleInput((e.target as HTMLInputElement).value ?? "")
+          }
           placeholder="escribe tu respuesta..."
-          value={input}
+          value={gameState ? gameState.input : ""}
+          disabled={typeof gameState === "undefined"}
         />
       </div>
     </>
