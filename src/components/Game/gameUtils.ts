@@ -1,6 +1,5 @@
 import removeAccents from "remove-accents";
 import type { GameState, SolutionKey } from "./types";
-import exp from "node:constants";
 
 const regexChallengesWithSolutions = /\[([^\[]*?){(.*?)}]/gm;
 const regexChallengesWithoutSolutions = /\[([^\[]*?)]/gm;
