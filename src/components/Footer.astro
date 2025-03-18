@@ -2,11 +2,54 @@
 
 ---
 
-<div>
+<div class="footer">
     <p>Versión española del juego original <a href="https://bracket.city/" target="_blank">Bracket City</a></p>
     <ul>
         <li>Hecho con ♥ por <a href="http://fparedes.com" target="_blank">Fernando Paredes</a></li>
-        <li><a href="http://fparedes.com" target="_blank">Github</a></li>
+        <li><a href="http://fparedes.com" target="_blank"> Github</a></li>
     </ul>
 </div>
+
+<style>
+  .footer {
+    color: var(--footer-color);
+    font-size: var(--footer-font-size);
+    text-align: center;
+
+    a {
+      color: var(--footer-color);
+    }
+
+    p {
+      margin: 0 0 .5em 0;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: inline-block;
+      margin-left: 1ch;
+      font-size: .9em;
+    }
+
+    li::before {
+      content: '/';
+      margin-right: 1ch;
+    }
+
+    li:first-child {
+      margin-left: 0;
+    }
+
+    li:first-child::before {
+      content: '';
+      margin: 0;
+    }
+
+  }
+</style>
 
