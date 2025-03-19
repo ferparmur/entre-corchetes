@@ -1,9 +1,9 @@
-.prompt-area {
-  background: #e4e7ea;
+.puzzle-area {
+  background: var(--puzzle-background);
   padding: 10px;
   border-radius: 5px;
   font-family: var(--font-family-mono);
-  font-size: var(--game-font-size);
+  font-size: var(--puzzle-font-size);
   line-height: 1.7;
   max-height: max(50vh, 300px);
   overflow-y: auto;
@@ -18,7 +18,7 @@
   width: 100%;
   color: var(--color-fg-body);
   font-family: var(--font-family-mono);
-  font-size: var(--game-font-size);
+  font-size: var(--puzzle-font-size);
   border: 1px solid #ddd;
   border-radius: 5px;
   padding: 10px;
@@ -26,8 +26,23 @@
 
 .highlight-active-challenge {
   background: var(--color-highlight-active);
+  cursor: pointer;
 }
 
 mark {
   background: var(--color-highlight-solution);
+}
+
+.displayed-solutions-area ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.displayed-solutions-area li {
+  background: var(--color-highlight-subtle);
+  font-family: var(--font-family-mono);
+  margin: 10px 0;
+  padding: 5px;
+  border-radius: 5px;
 }

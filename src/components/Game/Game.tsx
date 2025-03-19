@@ -1,11 +1,13 @@
-import { h } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import "./Game.css";
 import {
   extractSolutionKeys,
+  HIGHLIGHT_CLASSNAME,
   highlightClues,
+  insertClueFirstLetterInPuzzle,
   isValidGameState,
+  regexChallengesWithoutSolutions,
   removeSolutionMarks,
   stdDate,
   stdString,
@@ -35,6 +37,7 @@ const Game = ({ puzzle }: GameProps) => {
         gameComplete: false,
         input: "",
         solutionKeys: extractSolutionKeys(puzzle.puzzleCode),
+        displayedSolutions: [],
       });
     }
   }, []);
@@ -63,8 +66,12 @@ const Game = ({ puzzle }: GameProps) => {
       );
     });
     if (solvedSolution) {
+      const regex = new RegExp(
+        `\\[${solvedSolution.clue}(?: \\([A-Z](?: _)*\\))?\\]`,
+      );
+      console.log(regex);
       const newPuzzle = removeSolutionMarks(gameState.displayedPuzzle).replace(
-        `[${solvedSolution.clue}]`,
+        regex,
         `<mark>${solvedSolution.solution}</mark>`,
       );
       setGameState({
@@ -80,6 +87,13 @@ const Game = ({ puzzle }: GameProps) => {
             return solutionKey;
           }),
         ),
+        displayedSolutions: [
+          {
+            clue: solvedSolution.clue,
+            solution: solvedSolution.solution,
+          },
+          ...gameState.displayedSolutions,
+        ],
         input: "",
       });
     } else {
@@ -90,13 +104,50 @@ const Game = ({ puzzle }: GameProps) => {
   return (
     <>
       <div
-        class="prompt-area"
+        class="puzzle-area"
         dangerouslySetInnerHTML={{
           __html: highlightClues(
             isValidGameState(gameState)
               ? gameState.displayedPuzzle
               : stripSolutions(puzzle.puzzleCode),
           ),
+        }}
+        onClick={(e) => {
+          if (
+            !(
+              e.target instanceof HTMLElement &&
+              e.target.className === HIGHLIGHT_CLASSNAME &&
+              gameState?.solutionKeys
+            )
+          ) {
+            return;
+          }
+
+          const clickedClue = (e.target as HTMLElement)?.innerText.replace(
+            regexChallengesWithoutSolutions,
+            "$1",
+          );
+
+          gameState?.solutionKeys.map((solutionKey) => {
+            if (solutionKey.clue !== clickedClue || !solutionKey.active) {
+              return solutionKey;
+            }
+
+            if (!solutionKey.peeked && confirm("¿Revelar la primera letra?")) {
+              solutionKey.peeked = true;
+              setGameState({
+                ...gameState,
+                displayedPuzzle: insertClueFirstLetterInPuzzle(
+                  solutionKey.clue,
+                  solutionKey.solution[0],
+                  gameState.displayedPuzzle,
+                ),
+              });
+              console.log(solutionKey);
+            }
+
+            if (!solutionKey) return solutionKey;
+          });
         }}
       />
       <div class="input-area">
@@ -111,6 +162,20 @@ const Game = ({ puzzle }: GameProps) => {
           value={gameState ? gameState.input : ""}
           disabled={typeof gameState === "undefined"}
         />
+      </div>
+
+      <div class="displayed-solutions-area">
+        {gameState?.displayedSolutions &&
+          gameState?.displayedSolutions.length > 0 && (
+            <ul>
+              {gameState?.displayedSolutions.map((displayedSolution) => (
+                <li>
+                  {displayedSolution.clue}:{" "}
+                  <strong>{displayedSolution.solution}</strong>
+                </li>
+              ))}
+            </ul>
+          )}
       </div>
     </>
   );

@@ -8,6 +8,7 @@
   --color-bg-body: #fefefe;
   --color-fg-body: #222;
   --color-fg-subtle: #555;
+  --color-highlight-subtle: #e4e7ea;
   --color-highlight-active: rgba(255, 248, 182, 0.8);
   --color-highlight-solution: rgba(182, 255, 152, 0.8);
   --font-size-xl: 20px;
@@ -15,7 +16,8 @@
   --font-size-md: 16px;
   --font-size-sm: 14px;
 
-  --game-font-size: var(--font-size-lg);
+  --puzzle-font-size: var(--font-size-lg);
+  --puzzle-background: var(--color-highlight-subtle);
 
   --footer-color: var(--color-fg-subtle);
   --footer-font-size: var(--font-size-sm);

@@ -2,9 +2,12 @@ import removeAccents from "remove-accents";
 import type { GameState, SolutionKey } from "./types";
 
 const regexChallengesWithSolutions = /\[([^\[]*?){(.*?)}]/gm;
-const regexChallengesWithoutSolutions = /\[([^\[]*?)]/gm;
+export const regexChallengesWithoutSolutions =
+  /\[([^\[]*?)(?: \(([A-Z])(?: _)+\))?]/gm;
 const regexSolutionMark = /<mark>(.*?)<\/mark>/m;
 const regexSolutions = /{(.*?)}/gm;
+
+export const HIGHLIGHT_CLASSNAME = "highlight-active-challenge";
 
 export function extractSolutionKeys(puzzle: string): SolutionKey[] {
   const solutions: SolutionKey[] = [];
@@ -18,6 +21,8 @@ export function extractSolutionKeys(puzzle: string): SolutionKey[] {
         solution: match[2],
         solved: false,
         active: solutionLevel === 0,
+        peeked: false,
+        revealed: false,
       });
     }
 
@@ -47,15 +52,23 @@ export function updateSolutionKeys(
   });
 }
 
-export function stripSolutions(prompt: string): string {
-  return prompt.replace(regexSolutions, "");
+export function stripSolutions(puzzle: string): string {
+  return puzzle.replace(regexSolutions, "");
 }
 
-export function highlightClues(prompt: string): string {
-  return prompt.replace(
+export function highlightClues(puzzle: string): string {
+  return puzzle.replace(
     regexChallengesWithoutSolutions,
-    "<span class='highlight-active-challenge'>$&</span>",
+    `<span class='${HIGHLIGHT_CLASSNAME}'>$&</span>`,
   );
+}
+
+export function insertClueFirstLetterInPuzzle(
+  clue: string,
+  firstLetter: string,
+  puzzle: string,
+): string {
+  return puzzle.replace(clue, `${clue} (${firstLetter.toUpperCase()})`);
 }
 
 export function removeSolutionMarks(puzzle: string): string {

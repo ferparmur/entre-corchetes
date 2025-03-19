@@ -10,6 +10,8 @@ export type SolutionKey = {
   solution: string;
   solved: boolean;
   active: boolean;
+  peeked: boolean;
+  revealed: boolean;
 };
 
 export type GameState = {
@@ -18,4 +20,8 @@ export type GameState = {
   solutionKeys: SolutionKey[];
   lastSolution?: string;
   input: string;
+  displayedSolutions: {
+    clue: string;
+    solution: string;
+  }[];
 };
